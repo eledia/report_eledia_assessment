@@ -144,7 +144,7 @@ LEFT JOIN {groups} g ON g.courseid = c.id
 LEFT JOIN {groups_members} gm ON g.id = gm.groupid AND gm.userid = u.id
 WHERE m.name LIKE \'quiz\'
 AND c.id =  ?
-ORDER BY "Status","Name","Vorname","Versuch"';
+ORDER BY "status","name","vorname","versuch"';
     $params = array($course->id);
     $data = $DB->get_records_sql($sql, $params);
 
