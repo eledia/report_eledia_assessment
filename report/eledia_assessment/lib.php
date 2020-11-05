@@ -131,7 +131,7 @@ u.username AS "matrikelnummer",
  case when qa.state is null then \'nicht gestartet\'
  when qa.state = \'inprogress\' then \'gestartet\'
  when qa.state = \'finished\' then \'beendet\'
- else qa.state end AS "Status", u.id AS uid, cm.id AS cmid
+ else qa.state end AS "status", u.id AS uid, cm.id AS cmid
 FROM {role_assignment}s AS ra
 JOIN {context} context ON context.id = ra.contextid AND context.contextlevel = 50
 JOIN {course} c ON c.id = context.instanceid
