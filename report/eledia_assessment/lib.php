@@ -197,7 +197,7 @@ function report_eledia_assessment_get_course_overview_pdf($course, $context) {
     $pdf = new PDF('P', 'mm', 'A4', true, 'UTF-8', false);
     $pdf->setPrintHeader(false);
     $pdf->setPrintFooter(false);
-    $pdf->SetAutoPageBreak(false, 0);
+    $pdf->SetAutoPageBreak(true, 0);
     $pdf->AddPage();
 
     // Set default font subsetting mode.
