@@ -34,7 +34,8 @@ defined('MOODLE_INTERNAL') || die;
  * @throws coding_exception
  * @throws moodle_exception
  */
-function report_eledia_assessment_extend_navigation_course($navigation, $course, $context) {
+function report_eledia_assessment_extend_navigation_course($navigation, $course, $context)
+{
     if ($course->id == 1) {
         return;
     }
@@ -54,7 +55,8 @@ function report_eledia_assessment_extend_navigation_course($navigation, $course,
  * @throws dml_exception
  * @throws moodle_exception
  */
-function report_eledia_assessment_get_course_overview_header($course, $delimiter = '<br>') {
+function report_eledia_assessment_get_course_overview_header($course, $delimiter = '<br>')
+{
     $header = '';
     return $header;
 }
@@ -66,48 +68,57 @@ function report_eledia_assessment_get_course_overview_header($course, $delimiter
  * @return string
  * @throws coding_exception
  */
-function report_eledia_assessment_get_course_overview_body($data) {
+function report_eledia_assessment_get_course_overview_body($data)
+{
     global $CFG;
-    $table = new html_table;
-    $table->cellpadding = 1;
-    $table->cellspacing = 1;
-    $table->attributes['class'] = 'flexible generaltable generalbox';
-    $table->attributes['style'] = 'font-size:12px';
 
-    $table->head = array(
-        get_string('lastname'),
-        get_string('firstname'),
-        get_string('mtrnr', 'report_eledia_assessment'),
-        get_string('group'),
-        get_string('assessment', 'report_eledia_assessment'),
-        get_string('attempt', 'report_eledia_assessment'),
-        get_string('status', 'report_eledia_assessment'),
+    $content_html = '<table cellspacing="0" cellpadding="5" border="0" class="flexible generaltable generalbox">'
+                    .'<tr style="font-weight:bold">';
+
+    $tableheadcols = array(
+        array('5%' ,''),
+        array('16%' , get_string('lastname')),
+        array('16%' , get_string('firstname')),
+        array('13%' , get_string('mtrnr', 'report_eledia_assessment')),
+        array('15%' , get_string('group')),
+        array('15%' , get_string('assessment', 'report_eledia_assessment')),
+        array('10%' , get_string('attempt', 'report_eledia_assessment')),
+        array('10%' , get_string('status', 'report_eledia_assessment')),
     );
 
-    $table->data = array();
+    foreach ($tableheadcols as $tablecol){
+        $content_html .= '<th style="width: '.$tablecol[0].';">'.$tablecol[1].'</th>';
+    }
+    $content_html .= '</tr>';
+
     if (empty($data)) {
         return '';
     }
+
     $i = 0;
     foreach ($data as $key => $item) {
-        $row = new html_table_row();
-        if (($i % 2) == 1) {
-            $row->style = 'background-color:LightGray';
+
+        if (($i % 2) == 0) {
+            $style = 'background-color:LightGray';
         } else {
-            $row->style = 'background-color:white';
+            $style = 'background-color:white';
         }
-        $row->cells[] = '<a target="_new" href="'.$CFG->wwwroot.'/user/profile.php?id='.$item->uid.'">'.$item->name.'</a>';
-        $row->cells[] = $item->vorname;
-        $row->cells[] = $item->matrikelnummer;
-        $row->cells[] = $item->gruppe;
-        $row->cells[] = '<a target="_new" href="'.$CFG->wwwroot.'/mod/quiz/view.php?id='.$item->cmid.'">'.$item->assessment.'</a>';
-        $row->cells[] = $item->versuch;
-        $row->cells[] = $item->status;
-        $table->data[] = $row;
+        $content_html .= '<tr nobr="true" style="'.$style.'">';
+
+        $content_html .= '<td>'. ($i + 1).'</td>';
+        $content_html .= '<td><a target="_new" href="' . $CFG->wwwroot . '/user/profile.php?id=' . $item->uid . '">' . $item->name . '</a></td>';
+        $content_html .= '<td>' .$item->vorname.'</td>';
+        $content_html .= '<td>' .$item->matrikelnummer.'</td>';
+        $content_html .= '<td>' .$item->gruppe.'</td>';
+        $content_html .= '<td><a target="_new" href="' . $CFG->wwwroot . '/mod/quiz/view.php?id=' . $item->cmid . '">' . $item->assessment . '</a></td>';
+        $content_html .= '<td>' .$item->versuch.'</td>';
+        $content_html .= '<td>' . $item->status.'</td>';
+
+        $content_html .= '</tr>';
         $i++;
     }
-    $body = html_writer::table($table);
-    return $body;
+    $content_html .= '</table>';
+    return  $content_html;
 }
 
 /**
@@ -119,36 +130,42 @@ function report_eledia_assessment_get_course_overview_body($data) {
  * @throws coding_exception
  * @throws moodle_exception
  */
-function report_eledia_assessment_get_course_overview_data($course) {
+function report_eledia_assessment_get_course_overview_data($course)
+{
     global $DB;
+    $sql = "SELECT 
+    case when gm.id is null then ".$DB->sql_concat('u.id', 'q.id')." 
+ else ".$DB->sql_concat('u.id', 'q.id','gm.id')." end AS 'id',
+ u.lastname  AS 'name', 
+ u.firstname AS 'vorname', 
+ u.username AS 'matrikelnummer',  
+  case when gm.id is null then '' 
+ else g.name end AS 'gruppe',
+q.name  AS 'assessment',
+ qa.attempt AS 'versuch', 
+ case when qa.state is null then 'nicht gestartet' 
+ when qa.state = 'inprogress' then 'gestartet'
+ when qa.state = 'finished' then 'beendet'
+ else qa.state end AS 'Status',
+ u.id AS uid, cm.id AS cmid
+FROM {role_assignments} AS ra
+JOIN {context} AS context ON context.id = ra.contextid AND context.contextlevel = 50
+JOIN {course} AS c ON c.id = context.instanceid 
+JOIN {course_modules} AS cm ON cm.course = c.id
+JOIN {modules} AS m ON m.id = cm.module
+JOIN {quiz} AS q ON q.course = c.id AND cm.instance = q.id 
+JOIN {user} AS u ON u.id = ra.userid
+LEFT JOIN {quiz_attempts} AS qa ON qa.userid = u.id AND qa.quiz = q.id 
+LEFT JOIN {groups} AS g ON g.courseid = c.id
+LEFT JOIN {groups_members} AS gm ON g.id = gm.groupid AND gm.userid = u.id 
+WHERE m.name LIKE 'quiz' 
+    AND c.id =  ?
+ORDER BY 'assessment','status','name','vorname','versuch'";
 
-    $sql = 'SELECT
-u.username AS "matrikelnummer",
- u.lastname AS "name",
- u.firstname AS "vorname",   g.name AS "gruppe",
- q.name AS "assessment",
- qa.attempt AS "versuch",
- case when qa.state is null then \'nicht gestartet\'
- when qa.state = \'inprogress\' then \'gestartet\'
- when qa.state = \'finished\' then \'beendet\'
- else qa.state end AS "status", u.id AS uid, cm.id AS cmid
-FROM {role_assignment}s AS ra
-JOIN {context} context ON context.id = ra.contextid AND context.contextlevel = 50
-JOIN {course} c ON c.id = context.instanceid
-JOIN {course_modules} cm ON cm.course = c.id
-JOIN {modules} m ON m.id = cm.module
-JOIN {quiz} q ON q.course = c.id AND cm.instance = q.id
-JOIN {user} u ON u.id = ra.userid
-LEFT JOIN {quiz_attempts} qa ON qa.userid = u.id AND qa.quiz = q.id
-LEFT JOIN {groups} g ON g.courseid = c.id
-LEFT JOIN {groups_members} gm ON g.id = gm.groupid AND gm.userid = u.id
-WHERE m.name LIKE \'quiz\'
-AND c.id =  ?
-ORDER BY "status","name","vorname","versuch"';
     $params = array($course->id);
     $data = $DB->get_records_sql($sql, $params);
-
     return $data;
+
 }
 
 /**
@@ -158,7 +175,8 @@ ORDER BY "status","name","vorname","versuch"';
  * @return stdClass
  * @throws moodle_exception
  */
-function report_eledia_assessment_load_course_custom($course) {
+function report_eledia_assessment_load_course_custom($course)
+{
 
     $handler = \core_customfield\handler::get_handler('core_course', 'course');
     $datas = $handler->get_instance_data($course->id);
@@ -166,7 +184,7 @@ function report_eledia_assessment_load_course_custom($course) {
         if (empty($data->export_value())) {
             continue;
         }
-        $fieldname = 'custom_field_'.$data->get_field()->get('shortname');
+        $fieldname = 'custom_field_' . $data->get_field()->get('shortname');
         $course->$fieldname = $data->export_value();
     }
     if (empty($course->custom_field_programme)) {
@@ -187,7 +205,8 @@ function report_eledia_assessment_load_course_custom($course) {
  * @throws coding_exception
  * @throws moodle_exception
  */
-function report_eledia_assessment_get_course_overview_pdf($course, $context) {
+function report_eledia_assessment_get_course_overview_pdf($course, $context)
+{
     global $CFG;
 
     require_once("$CFG->libdir/pdflib.php");
@@ -206,7 +225,7 @@ function report_eledia_assessment_get_course_overview_pdf($course, $context) {
     $pdf->SetFont('helvetica', '', 10, '', true);
 
     // Get report header block.
-    $text = report_eledia_assessment_get_course_overview_header($course).'<br><br>';
+    $text = report_eledia_assessment_get_course_overview_header($course) . '<br><br>';
     // Get report table.
     $data = report_eledia_assessment_get_course_overview_data($course);
     $text .= report_eledia_assessment_get_course_overview_body($data);
@@ -219,11 +238,14 @@ function report_eledia_assessment_get_course_overview_pdf($course, $context) {
 }
 
 require_once($CFG->libdir . '/formslib.php');
+
 /**
  * Fake form for file download.
  */
-class assessment_download extends moodleform {
-    public function definition() {
+class assessment_download extends moodleform
+{
+    public function definition()
+    {
         $mform =& $this->_form;
 
         $courseid = optional_param('courseid', '', PARAM_RAW);
