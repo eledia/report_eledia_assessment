@@ -73,21 +73,21 @@ function report_eledia_assessment_get_course_overview_body($data)
     global $CFG;
 
     $content_html = '<table cellspacing="0" cellpadding="5" border="0" class="flexible generaltable generalbox">'
-                    .'<tr style="font-weight:bold">';
+        . '<tr style="font-weight:bold">';
 
     $tableheadcols = array(
-        array('5%' ,''),
-        array('16%' , get_string('lastname')),
-        array('16%' , get_string('firstname')),
-        array('13%' , get_string('mtrnr', 'report_eledia_assessment')),
-        array('15%' , get_string('group')),
-        array('15%' , get_string('assessment', 'report_eledia_assessment')),
-        array('10%' , get_string('attempt', 'report_eledia_assessment')),
-        array('10%' , get_string('status', 'report_eledia_assessment')),
+        array('5%', ''),
+        array('16%', get_string('lastname')),
+        array('16%', get_string('firstname')),
+        array('13%', get_string('mtrnr', 'report_eledia_assessment')),
+        array('15%', get_string('group')),
+        array('15%', get_string('assessment', 'report_eledia_assessment')),
+        array('10%', get_string('attempt', 'report_eledia_assessment')),
+        array('10%', get_string('status', 'report_eledia_assessment')),
     );
 
-    foreach ($tableheadcols as $tablecol){
-        $content_html .= '<th style="width: '.$tablecol[0].';">'.$tablecol[1].'</th>';
+    foreach ($tableheadcols as $tablecol) {
+        $content_html .= '<th style="width: ' . $tablecol[0] . ';">' . $tablecol[1] . '</th>';
     }
     $content_html .= '</tr>';
 
@@ -103,22 +103,22 @@ function report_eledia_assessment_get_course_overview_body($data)
         } else {
             $style = 'background-color:white';
         }
-        $content_html .= '<tr nobr="true" style="'.$style.'">';
+        $content_html .= '<tr nobr="true" style="' . $style . '">';
 
-        $content_html .= '<td>'. ($i + 1).'</td>';
+        $content_html .= '<td>' . ($i + 1) . '</td>';
         $content_html .= '<td><a target="_new" href="' . $CFG->wwwroot . '/user/profile.php?id=' . $item->uid . '">' . $item->name . '</a></td>';
-        $content_html .= '<td>' .$item->vorname.'</td>';
-        $content_html .= '<td>' .$item->matrikelnummer.'</td>';
-        $content_html .= '<td>' .$item->gruppe.'</td>';
+        $content_html .= '<td>' . $item->vorname . '</td>';
+        $content_html .= '<td>' . $item->matrikelnummer . '</td>';
+        $content_html .= '<td>' . $item->gruppe . '</td>';
         $content_html .= '<td><a target="_new" href="' . $CFG->wwwroot . '/mod/quiz/view.php?id=' . $item->cmid . '">' . $item->assessment . '</a></td>';
-        $content_html .= '<td>' .$item->versuch.'</td>';
-        $content_html .= '<td>' . $item->status.'</td>';
+        $content_html .= '<td>' . $item->versuch . '</td>';
+        $content_html .= '<td>' . $item->status . '</td>';
 
         $content_html .= '</tr>';
         $i++;
     }
     $content_html .= '</table>';
-    return  $content_html;
+    return $content_html;
 }
 
 /**
@@ -134,38 +134,77 @@ function report_eledia_assessment_get_course_overview_data($course)
 {
     global $DB;
     $sql = "SELECT 
-    case when gm.id is null then ".$DB->sql_concat('u.id', 'q.id')." 
- else ".$DB->sql_concat('u.id', 'q.id','gm.id')." end AS 'id',
- u.lastname  AS 'name', 
- u.firstname AS 'vorname', 
- u.username AS 'matrikelnummer',  
-  case when gm.id is null then '' 
- else g.name end AS 'gruppe',
-q.name  AS 'assessment',
- qa.attempt AS 'versuch', 
- case when qa.state is null then 'nicht gestartet' 
- when qa.state = 'inprogress' then 'gestartet'
- when qa.state = 'finished' then 'beendet'
- else qa.state end AS 'Status',
- u.id AS uid, cm.id AS cmid
-FROM {role_assignments} AS ra
-JOIN {context} AS context ON context.id = ra.contextid AND context.contextlevel = 50
-JOIN {course} AS c ON c.id = context.instanceid 
-JOIN {course_modules} AS cm ON cm.course = c.id
-JOIN {modules} AS m ON m.id = cm.module
-JOIN {quiz} AS q ON q.course = c.id AND cm.instance = q.id 
-JOIN {user} AS u ON u.id = ra.userid
-LEFT JOIN {quiz_attempts} AS qa ON qa.userid = u.id AND qa.quiz = q.id 
-LEFT JOIN {groups} AS g ON g.courseid = c.id
-LEFT JOIN {groups_members} AS gm ON g.id = gm.groupid AND gm.userid = u.id 
-WHERE m.name LIKE 'quiz' 
-    AND c.id =  ?
-ORDER BY 'assessment','status','name','vorname','versuch'";
+         u.lastname  AS 'name', 
+         u.firstname AS 'vorname', 
+         u.username AS 'matrikelnummer',  
+          case when gm.id is null then '' 
+         else g.name end AS 'gruppe',
+        q.name  AS 'assessment',
+         qa.attempt AS 'versuch', 
+         case when qa.state is null then 'nicht gestartet' 
+         when qa.state = 'inprogress' then 'gestartet'
+         when qa.state = 'finished' then 'beendet'
+         else qa.state end AS 'Status',
+         u.id AS uid, cm.id AS cmid, g.id AS gid, cm.availability AS availability
+        FROM {role_assignments} AS ra
+        JOIN {context} AS context ON context.id = ra.contextid AND context.contextlevel = 50
+        JOIN {course} AS c ON c.id = context.instanceid 
+        JOIN {course_modules} AS cm ON cm.course = c.id
+        JOIN {modules} AS m ON m.id = cm.module
+        JOIN {quiz} AS q ON q.course = c.id AND cm.instance = q.id 
+        JOIN {user} AS u ON u.id = ra.userid
+        LEFT JOIN {quiz_attempts} AS qa ON qa.userid = u.id AND qa.quiz = q.id 
+        LEFT JOIN {groups} AS g ON g.courseid = c.id
+        LEFT JOIN {groups_members} AS gm ON g.id = gm.groupid AND gm.userid = u.id 
+        WHERE m.name LIKE 'quiz' 
+            AND c.id =  ?
+        ORDER BY 'assessment','status','name','vorname','versuch'";
 
     $params = array($course->id);
-    $data = $DB->get_records_sql($sql, $params);
-    return $data;
+    $records = $DB->get_recordset_sql($sql, $params);
 
+    $data = array();
+    foreach ($records as $record) {
+        $data[] = $record;
+    }
+    $records->close();
+
+    // Get groups for each user.
+    $userids = array_unique(array_column($data, 'matrikelnummer', 'uid'));
+    $usergroups = array();
+    $coursecontext = \context_course::instance($course->id);
+    foreach ($userids as $userid => $matrikelnummer) {
+        // Get all roles for user
+        $roles = array_column(get_user_roles($coursecontext, $userid, true), 'shortname');
+        // Filter all admin users, not numeric unsernames and all users who has more roles than student.
+        if (!is_siteadmin($userid) && is_numeric($matrikelnummer) && (count(array_diff($roles, ['student']))) === 0) {
+            $usergroups[$userid] = groups_get_user_groups($course->id, $userid)[0];
+        }
+    }
+
+    // Get groups for each quiz.
+    $availabilitys = array_unique(array_column($data, 'availability', 'cmid'));
+    $quizgroups = array();
+    foreach ($availabilitys as $cmid => $availability) {
+        $availabilityobject = json_decode($availability);
+        if (isset($availabilityobject->c)) {
+            foreach ($availabilityobject->c as $availabilityitem) {
+                if ($availabilityitem->type === 'group' && isset($availabilityitem->id)) {
+                    $quizgroups[$cmid][] = $availabilityitem->id;
+                }
+            }
+        }
+    }
+
+    // Filter the record, if groups in the quiz exist and the group is not in usergroups and quizgroups
+    $returndata = array();
+    foreach ($data as $record) {
+        if (isset($usergroups[$record->uid]) && (empty($quizgroups[$record->cmid]) || in_array($record->gid, array_intersect($usergroups[$record->uid], $quizgroups[$record->cmid])))) {
+            array_push($returndata, $record);
+        }
+    }
+
+    return $returndata;
 }
 
 /**
@@ -232,7 +271,7 @@ function report_eledia_assessment_get_course_overview_pdf($course, $context)
     $pdf->writeHTML($text);
 
     // Write processed file to temporary path.
-    $filename = $course->fullname.'_'.date('YmdHis', time()).'.pdf';
+    $filename = $course->fullname . '_' . date('YmdHis', time()) . '.pdf';
     $content = $pdf->Output($filename, 'D');
     return $content;
 }
