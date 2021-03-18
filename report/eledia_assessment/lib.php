@@ -133,17 +133,17 @@ function report_eledia_assessment_get_course_overview_body($data)
 function report_eledia_assessment_get_course_overview_data($course)
 {
     global $DB;
-    $sql = "SELECT 
-         u.lastname  AS name, 
-         u.firstname AS vorname, 
-         u.username AS matrikelnummer,  
-          case when gm.id is null then '' 
-         else g.name end AS gruppe,
-        q.name  AS assessment,
-         qa.attempt AS versuch, 
-         case when qa.state is null then 'nicht gestartet' 
-         when qa.state = 'inprogress' then 'gestartet'
-         when qa.state = 'finished' then 'beendet'
+    $sql = 'SELECT 
+         u.lastname  AS "name", 
+         u.firstname AS "vorname", 
+         u.username AS "matrikelnummer",  
+          case when gm.id is null then "" 
+         else g.name end AS "gruppe",
+        q.name  AS "assessment",
+         qa.attempt AS "versuch", 
+         case when qa.state is null then "nicht gestartet" 
+         when qa.state = "inprogress" then "gestartet"
+         when qa.state = "finished" then "beendet"
          else qa.state end AS Status,
          u.id AS uid, cm.id AS cmid, g.id AS gid, cm.availability AS availability
         FROM {role_assignments} AS ra
@@ -156,9 +156,9 @@ function report_eledia_assessment_get_course_overview_data($course)
         LEFT JOIN {quiz_attempts} AS qa ON qa.userid = u.id AND qa.quiz = q.id 
         LEFT JOIN {groups} AS g ON g.courseid = c.id
         LEFT JOIN {groups_members} AS gm ON g.id = gm.groupid AND gm.userid = u.id 
-        WHERE m.name LIKE 'quiz' 
+        WHERE m.name LIKE "quiz" 
             AND c.id =  ?
-        ORDER BY 'assessment','status','name','vorname','versuch'";
+        ORDER BY "assessment","status","name","vorname","versuch"';
 
 
     $params = array($course->id);
