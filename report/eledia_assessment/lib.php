@@ -134,17 +134,17 @@ function report_eledia_assessment_get_course_overview_data($course)
 {
     global $DB;
     $sql = "SELECT 
-         u.lastname  AS 'name', 
-         u.firstname AS 'vorname', 
-         u.username AS 'matrikelnummer',  
+         u.lastname  AS name, 
+         u.firstname AS vorname, 
+         u.username AS matrikelnummer,  
           case when gm.id is null then '' 
-         else g.name end AS 'gruppe',
-        q.name  AS 'assessment',
-         qa.attempt AS 'versuch', 
+         else g.name end AS gruppe,
+        q.name  AS assessment,
+         qa.attempt AS versuch, 
          case when qa.state is null then 'nicht gestartet' 
          when qa.state = 'inprogress' then 'gestartet'
          when qa.state = 'finished' then 'beendet'
-         else qa.state end AS 'Status',
+         else qa.state end AS Status,
          u.id AS uid, cm.id AS cmid, g.id AS gid, cm.availability AS availability
         FROM {role_assignments} AS ra
         JOIN {context} AS context ON context.id = ra.contextid AND context.contextlevel = 50
@@ -159,6 +159,7 @@ function report_eledia_assessment_get_course_overview_data($course)
         WHERE m.name LIKE 'quiz' 
             AND c.id =  ?
         ORDER BY 'assessment','status','name','vorname','versuch'";
+
 
     $params = array($course->id);
     $records = $DB->get_recordset_sql($sql, $params);
