@@ -143,7 +143,7 @@ function report_eledia_assessment_get_course_overview_data($course)
          case when qa.state is null then \'nicht gestartet\' 
          when qa.state = \'inprogress\' then \'gestartet\'
          when qa.state = \'finished\' then \'beendet\'
-         else qa.state end AS "Status",
+         else qa.state end AS "status",
          u.id AS "uid", cm.id AS "cmid", g.id AS "gid", cm.availability AS "availability"
         FROM {role_assignments} AS ra
         JOIN {context} AS context ON context.id = ra.contextid AND context.contextlevel = 50
