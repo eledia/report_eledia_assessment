@@ -42,7 +42,7 @@ function report_eledia_assessment_extend_navigation_course($navigation, $course,
     if (has_capability('report/eledia_assessment:view_course_overview', $context)) {
         $url = new moodle_url('/report/eledia_assessment/course_overview.php', array('courseid' => $course->id));
         $navigation->add(get_string('course_overview', 'report_eledia_assessment'),
-            $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
+                $url, navigation_node::TYPE_SETTING, null, null, new pix_icon('i/report', ''));
     }
 }
 
@@ -73,17 +73,17 @@ function report_eledia_assessment_get_course_overview_body($data)
     global $CFG;
 
     $content_html = '<table cellspacing="0" cellpadding="5" border="0" class="flexible generaltable generalbox">'
-        . '<tr style="font-weight:bold">';
+            . '<tr style="font-weight:bold">';
 
     $tableheadcols = array(
-        array('5%', ''),
-        array('16%', get_string('lastname')),
-        array('16%', get_string('firstname')),
-        array('13%', get_string('mtrnr', 'report_eledia_assessment')),
-        array('15%', get_string('group')),
-        array('15%', get_string('assessment', 'report_eledia_assessment')),
-        array('10%', get_string('attempt', 'report_eledia_assessment')),
-        array('10%', get_string('status', 'report_eledia_assessment')),
+            array('5%', ''),
+            array('16%', get_string('lastname')),
+            array('16%', get_string('firstname')),
+            array('13%', get_string('mtrnr', 'report_eledia_assessment')),
+            array('15%', get_string('group')),
+            array('15%', get_string('assessment', 'report_eledia_assessment')),
+            array('10%', get_string('attempt', 'report_eledia_assessment')),
+            array('10%', get_string('status', 'report_eledia_assessment')),
     );
 
     foreach ($tableheadcols as $tablecol) {
@@ -159,7 +159,6 @@ function report_eledia_assessment_get_course_overview_data($course)
             AND c.id =  ?
         ORDER BY "assessment","status","name","vorname","versuch"';
 
-
     $params = array($course->id);
     $records = $DB->get_recordset_sql($sql, $params);
 
@@ -199,7 +198,8 @@ function report_eledia_assessment_get_course_overview_data($course)
     // Filter the record, if groups in the quiz exist and the group is not in usergroups and quizgroups
     $returndata = array();
     foreach ($data as $record) {
-        if (isset($usergroups[$record->uid]) && (empty($quizgroups[$record->cmid]) || in_array($record->gid, array_intersect($usergroups[$record->uid], $quizgroups[$record->cmid])))) {
+        if (isset($usergroups[$record->uid]) && ((empty($quizgroups[$record->cmid]) && in_array($record->gid, $usergroups[$record->uid]))
+                        || (!empty($quizgroups[$record->cmid]) && in_array($record->gid, array_intersect($usergroups[$record->uid], $quizgroups[$record->cmid]))))) {
             array_push($returndata, $record);
         }
     }
