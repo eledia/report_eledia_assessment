@@ -30,7 +30,7 @@ $string['course_overview'] = 'Assessment Partitipants';
 
 $string['eledia_assessment:view_course_overview'] = 'Use report Partitipants by module';
 
-$string['mtrnr'] = 'Matrikelnummer';
+$string['mtrnr'] = 'username';
 
 $string['pluginname'] = 'assessment reports';
 $string['privacy:metadata'] = 'The assessment overview plugin does not store any personal data.';

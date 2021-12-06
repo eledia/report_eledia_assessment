@@ -176,7 +176,7 @@ function report_eledia_assessment_get_course_overview_data($course)
         // Get all roles for user
         $roles = array_column(get_user_roles($coursecontext, $userid, true), 'shortname');
         // Filter all admin users, not numeric unsernames and all users who has more roles than student.
-        if (!is_siteadmin($userid) && is_numeric($matrikelnummer) && (count(array_diff($roles, ['student']))) === 0) {
+        if (!is_siteadmin($userid) && (count(array_diff($roles, ['student']))) === 0) {
             $usergroups[$userid] = groups_get_user_groups($course->id, $userid)[0];
         }
     }

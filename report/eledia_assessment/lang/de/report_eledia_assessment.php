@@ -30,7 +30,7 @@ $string['course_overview'] = 'Assessment Teilnehmerliste';
 
 $string['eledia_assessment:view_course_overview'] = 'Report '.$string['course_overview'].' benutzen';
 
-$string['mtrnr'] = 'Matrikelnummer';
+$string['mtrnr'] = 'Anmeldename';
 
 $string['pluginname'] = 'Assessment Reports';
 $string['privacy:metadata'] = 'The assessment overview plugin does not store any personal data.';
